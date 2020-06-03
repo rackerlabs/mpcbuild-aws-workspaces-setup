@@ -91,7 +91,7 @@ resource "aws_vpc_dhcp_options" "dhcp_options_ad" {
 }
 
 resource "aws_vpc_dhcp_options_association" "dns_resolver_ad" {
-  count           = var.create_directory && var.create_windows_instance ? 1 : 0
+  count           = var.create_directory && var.update_dhcp_options ? 1 : 0
   vpc_id          = var.vpc_id
   dhcp_options_id = aws_vpc_dhcp_options.dhcp_options_ad.0.id
 }

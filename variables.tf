@@ -88,8 +88,8 @@ variable "permission_restart" {
   type        = bool
   default     = true
 }
-variable "create_windows_instance" {
-  description = "Create Windows Server Instance to manage Active Directory"
+variable "update_dhcp_options" {
+  description = "Use AD DNS servers to resolve queries on VPC"
   type        = bool
   default     = true
 }
