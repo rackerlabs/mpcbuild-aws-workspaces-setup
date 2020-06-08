@@ -1,0 +1,132 @@
+---
+- hosts: localhost
+  connection: local
+  become: yes
+  tasks:
+    - name: Upgrade all packages
+      yum:
+        name: '*'
+        state: latest
+    - name: Install RPM's and dependencies
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - freeradius
+        - freeradius-utils
+        - git
+        - gcc
+        - pam-devel
+        - qrencode
+        - qrencode-libs
+        - qrencode-devel
+        - autoconf
+        - automake
+        - libtool
+    - name: Clone Google Authenticator repo
+      git:
+        repo: 'https://github.com/google/google-authenticator-libpam.git'
+        dest: /home/ssm-user/google-authenticator-libpam
+        clone: yes
+    - name: Run bootstrap script
+      shell: ./bootstrap.sh
+      args:
+        chdir: /home/ssm-user/google-authenticator-libpam
+    - name: Run configure script
+      shell: ./configure
+      args:
+        chdir: /home/ssm-user/google-authenticator-libpam
+    - name: Run 'make' command
+      shell: make
+      args:
+        chdir: /home/ssm-user/google-authenticator-libpam
+    - name: Run 'make install' command
+      shell: make install
+      args:
+        chdir: /home/ssm-user/google-authenticator-libpam
+    - name: Create group radius-enabled
+      group:
+        name: radius-enabled
+        state: present
+    - name: Change user on file radiusd.conf
+      lineinfile:
+        path: /etc/raddb/radiusd.conf
+        regexp: '^\s+user'
+        line: '       user = root'
+        backup: yes
+    - name: Change group on file radiusd.conf
+      lineinfile:
+        path: /etc/raddb/radiusd.conf
+        regexp: '^\s+group'
+        line: '       group = root'
+    - name: Insert block on file /etc/raddb/users
+      blockinfile:
+        path: /etc/raddb/users
+        insertafter: '^#\s+Reply-Message = "Your account has been disabled."'
+        backup: yes
+        block: |
+          DEFAULT    Group != "radius-enabled", Auth-Type := Reject
+                     Reply-Message = "Your account has been disabled."
+          DEFAULT    Auth-Type := PAM
+    - name: Uncomment value on file /etc/raddb/sites-available/default
+      lineinfile:
+        path: /etc/raddb/sites-available/default
+        regexp: '^#\s+pam'
+        line: '        pam'
+        backup: yes
+    - name: Comment line 1 on file /etc/pam.d/radiusd
+      lineinfile:
+        path: /etc/pam.d/radiusd
+        regexp : '^auth\s+include\s+password-auth'
+        line: '#auth       include     password-auth'
+        backup: yes
+    - name: Comment line 2 on file /etc/pam.d/radiusd
+      lineinfile:
+        path: /etc/pam.d/radiusd
+        regexp : '^account\s+required\s+pam_nologin.so'
+        line: '#account    required    pam_nologin.so'
+    - name: Comment line 3 on file /etc/pam.d/radiusd
+      lineinfile:
+        path: /etc/pam.d/radiusd
+        regexp : '^account\s+include\s+password-auth'
+        line: '#account    include     password-auth'
+    - name: Comment line 4 on file /etc/pam.d/radiusd
+      lineinfile:
+        path: /etc/pam.d/radiusd
+        regexp : '^password\s+include\s+password-auth'
+        line: '#password   include     password-auth'
+    - name: Comment line 5 on file /etc/pam.d/radiusd
+      lineinfile:
+        path: /etc/pam.d/radiusd
+        regexp : '^session\s+include\s+password-auth'
+        line: '#session    include     password-auth'
+    - name: Insert block on file /etc/pam.d/radiusd
+      blockinfile:
+        path: /etc/pam.d/radiusd
+        insertafter: '^#session'
+        block: |
+          auth requisite /usr/local/lib/security/pam_google_authenticator.so
+          account required pam_permit.so
+          session required pam_permit.so
+    - name: Insert block on file /etc/raddb/clients.conf
+      blockinfile:
+        path: /etc/raddb/clients.conf
+        insertafter: EOF
+        block: |
+          client ad-connect {
+              ipaddr          = {{ vpc_cidr }}
+              secret          = {{ shared_secret }}
+          }
+
+    - name: Create soft link for pam module
+      file:
+        src: /etc/raddb/mods-available/pam
+        dest: /etc/raddb/mods-enabled/pam
+        owner: root
+        group: radiusd
+        state: link
+    - name: Enable radiusd service
+      service:
+        name: radiusd
+        enabled: yes
+        state: started
