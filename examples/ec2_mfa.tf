@@ -7,8 +7,8 @@ provider "aws" {
 #Along with FreeRadius, Google authenticator libraries and binaries are also deployed.
 #The YAML file with the playbook should be uploaded on a S3 bucket selected by the build engineer.
 ##IMPORTANT NOTE 1: Enabling MFA on a directory is currently not available in Terraform.
-##The API EnableRadius is already available by AWS, so the operation can be done through the Console or CLI
-##IMPORTANT NOTE 2: The FreeRadius implementation is only for demo purposes and cannnot be considered a solution for production
+##The API EnableRadius is already available in AWS, so the operation can be done through the Console or CLI
+##IMPORTANT NOTE 2: The FreeRadius implementation is only for demo purposes and cannot be considered a solution for production
 ##If the customer requires a production-ready solution, they must search a 3rd party provider with mature solutions
 
 resource "random_string" "shared_secret" {
