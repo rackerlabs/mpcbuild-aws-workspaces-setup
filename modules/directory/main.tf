@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 0.12"
 
   required_providers {
-    aws = ">= 2.64.0"
+    aws = ">= 3.21.0"
   }
 }
 
@@ -13,13 +13,15 @@ locals {
   }
 }
 
+######## Create Password and store it on SSM #######
+
 resource "random_string" "ad_password" {
   length           = var.length_password
   override_special = "!@#$%&()-_"
 }
 
 resource "aws_ssm_parameter" "ad_password_ssm" {
-  count = var.create_directory ? 1 : 0
+  count = var.create_directory && var.directory_type != "ADConnector" ? 1 : 0
 
   name  = "${var.environment}-ad-password"
   type  = "SecureString"
@@ -29,6 +31,8 @@ resource "aws_ssm_parameter" "ad_password_ssm" {
     ignore_changes = all
   }
 }
+
+####### Create SimpleAD directory if selected #######
 
 resource "aws_directory_service_directory" "simple_ad" {
   count = var.create_directory && var.directory_type == "SimpleAD" ? 1 : 0
@@ -46,6 +50,8 @@ resource "aws_directory_service_directory" "simple_ad" {
 
   tags = merge(var.tags, local.tags)
 }
+
+####### Create AWS Managed Microsoft AD
 
 resource "aws_directory_service_directory" "microsoft_ad" {
   count = var.create_directory && var.directory_type == "MicrosoftAD" ? 1 : 0
@@ -108,5 +114,14 @@ resource "aws_workspaces_directory" "workspaces_directory" {
     switch_running_mode  = var.permission_running_mode
     restart_workspace    = var.permission_restart
   }
+
+  workspace_creation_properties {
+    custom_security_group_id            = var.workspace_sg != "" ? var.workspace_sg : null
+    default_ou                          = var.default_ou != "" ? var.default_ou : null
+    enable_internet_access              = var.permission_internet_access
+    enable_maintenance_mode             = var.permission_maintenance_mode
+    user_enabled_as_local_administrator = var.permission_local_admin
+  }
+
   tags = merge(var.tags, local.tags)
 }
