@@ -43,3 +43,25 @@ variable "bundle_id" {
   type        = string
   default     = ""
 }
+
+variable "running_mode" {
+  description = "Running mode selected for the workspaces. Can be AUTO_STOP or ALWAYS_ON"
+  type        = string
+  default     = "AUTO_STOP"
+}
+
+variable "user_volume_size" {
+  description = "Size in GB of the user volume"
+  type        = number
+}
+
+variable "root_volume_size" {
+  description = "Size in GB of the root volume"
+  type        = number
+}
+
+variable "auto_stop_timeout" {
+  description = "Time in muntes to wait before stopping the workspace"
+  type        = number
+  default     = 60
+}
