@@ -26,6 +26,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "environment" {
+  description = "Application environment for which this resource is being created. Preferred values are Development, Integration, PreProduction, Production, QA, Staging, or Test."
+  type        = string
+  default     = "Development"
+}
+
 variable "workspace_compute_type" {
   description = "Compute type required for the workspaces. The following are the valid options: Performance, Standard, PowerPro, Power, Value, Graphics, GraphicsPro"
   type        = string
