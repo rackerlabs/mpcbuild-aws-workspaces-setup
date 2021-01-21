@@ -49,7 +49,7 @@ variable "vpc_id" {
 }
 
 variable "subnets_ids" {
-  description = "Subnet ID's (2) for AD deployment"
+  description = "Subnet ID's (2) for AD deployment. IMPORTANT NOTE: Make sure the AZ's selected are valid for the Workspaces service. More information at https://docs.aws.amazon.com/workspaces/latest/adminguide/azs-workspaces.html"
   type        = list(string)
 }
 
