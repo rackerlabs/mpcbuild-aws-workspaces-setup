@@ -16,6 +16,18 @@ variable "length_password" {
   default     = 16
 }
 
+variable "create_password" {
+  description = "Specify if a random password should be created by this module. If set as false, the user should provide its own password"
+  type        = bool
+  default     = true
+}
+
+variable "existing_password" {
+  description = "Use an specific password if this required by the customer"
+  type        = string
+  default     = ""
+}
+
 variable "create_directory" {
   description = "Create managed AWS AD/AD Connector"
   type        = bool

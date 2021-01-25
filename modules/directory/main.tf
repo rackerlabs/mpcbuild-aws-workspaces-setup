@@ -16,16 +16,18 @@ locals {
 ######## Create Password and store it on SSM #######
 
 resource "random_string" "ad_password" {
+  count = var.create_password ? 1 : 0
+
   length           = var.length_password
   override_special = "!@#$%&()-_"
 }
 
 resource "aws_ssm_parameter" "ad_password_ssm" {
-  count = var.create_directory && var.directory_type != "ADConnector" ? 1 : 0
+  count = var.create_directory && var.directory_type != "ADConnector" && var.create_password ? 1 : 0
 
   name  = "${var.environment}-ad-password"
   type  = "SecureString"
-  value = random_string.ad_password.result
+  value = random_string.ad_password.0.result
 
   lifecycle {
     ignore_changes = all
@@ -37,11 +39,11 @@ resource "aws_ssm_parameter" "ad_password_ssm" {
 resource "aws_directory_service_directory" "simple_ad" {
   count = var.create_directory && var.directory_type == "SimpleAD" ? 1 : 0
 
-  type = var.directory_type
-  name = var.directory_name
-  //  short_name = var.directory_netbios != "" ? var.directory_netbios : var.directory_name
-  password = random_string.ad_password.result
-  size     = var.directory_size
+  type       = var.directory_type
+  name       = var.directory_name
+  short_name = var.directory_netbios != "" ? var.directory_netbios : null
+  password   = var.create_password ? random_string.ad_password.0.result : var.existing_password
+  size       = var.directory_size
 
   vpc_settings {
     vpc_id     = var.vpc_id
@@ -56,11 +58,11 @@ resource "aws_directory_service_directory" "simple_ad" {
 resource "aws_directory_service_directory" "microsoft_ad" {
   count = var.create_directory && var.directory_type == "MicrosoftAD" ? 1 : 0
 
-  type = var.directory_type
-  name = var.directory_name
-  //  short_name = var.directory_netbios != "" ? var.directory_netbios : var.directory_name
-  password = random_string.ad_password.result
-  edition  = var.directory_size
+  type       = var.directory_type
+  name       = var.directory_name
+  short_name = var.directory_netbios != "" ? var.directory_netbios : null
+  password   = var.create_password ? random_string.ad_password.0.result : var.existing_password
+  edition    = var.directory_size
 
   vpc_settings {
     vpc_id     = var.vpc_id
@@ -73,11 +75,11 @@ resource "aws_directory_service_directory" "microsoft_ad" {
 resource "aws_directory_service_directory" "ad_connector" {
   count = var.create_directory && var.directory_type == "ADConnector" ? 1 : 0
 
-  type = var.directory_type
-  name = var.directory_name
-  //  short_name = var.directory_netbios != "" ? var.directory_netbios : var.directory_name
-  password = var.external_directory_password
-  size     = var.directory_size
+  type       = var.directory_type
+  name       = var.directory_name
+  short_name = var.directory_netbios != "" ? var.directory_netbios : null
+  password   = var.external_directory_password
+  size       = var.directory_size
 
   connect_settings {
     customer_dns_ips  = var.external_directory_dns_ips

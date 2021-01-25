@@ -9,7 +9,7 @@ provider "aws" {
 ##In reality, AD module would be in a different layer from the EC2 module
 
 module "ec2_ar_windowsad" {
-  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-ec2_autorecovery?ref=v0.12.7"
+  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-ec2_autorecovery?ref=v0.12.14"
 
   backup_tag_value               = "False"
   ec2_os                         = "windows2019"
@@ -46,11 +46,10 @@ module "ec2_ar_windowsad" {
 
 
 module "directory" {
-  source = "git@github.com:rackerlabs/mpcbuild-aws-workspaces-setup//?ref=v0.12.0"
+  source = "git@github.com:rackerlabs/mpcbuild-aws-workspaces-setup//modules/directory"
 
   directory_type = "SimpleAD"
   directory_name = "test.build.local"
-  directory_netbios = "test"
   directory_size = "Small"
   vpc_id = module.base_network.vpc_id
   subnets_ids = module.vpc.private_subnets

@@ -6,13 +6,13 @@ variable "directory_id" {
 variable "enable_encryption" {
   description = "Flag to define if encryption should be enabled on the volumes attached to the workspaces"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "key_identifier" {
-  description = "KMS key used to encrypt the volumes. Can be the alias, key id or the full ARN"
+  description = "KMS key used to encrypt the volumes. Use the key id or the full ARN. NOTE: Since Terraform has a limitation using key alias that forces replacement, avoid using it"
   type        = string
-  default     = "alias/aws/workspaces"
+  default     = ""
 }
 
 variable "username_list" {

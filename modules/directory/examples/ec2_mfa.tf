@@ -6,7 +6,7 @@ provider "aws" {
 #This example uses a Ansible playbook to deploy FreeRadius package and configuration on 1 Amazon2 EC2 instance
 #Along with FreeRadius, Google authenticator libraries and binaries are also deployed.
 #The YAML file with the playbook should be uploaded on a S3 bucket selected by the build engineer.
-##IMPORTANT NOTE 1: Enabling MFA on a directory is currently not available in Terraform.
+##IMPORTANT NOTE 1: Enabling MFA on a directory is currently not available in Terraform. Also, this feature is also available with MicrosoftAD
 ##The API EnableRadius is already available in AWS, so the operation can be done through the Console or CLI
 ##IMPORTANT NOTE 2: The FreeRadius implementation is only for demo purposes and cannot be considered a solution for production
 ##If the customer requires a production-ready solution, they must search a 3rd party provider with mature solutions
@@ -27,7 +27,7 @@ resource "aws_ssm_parameter" "radius_secret_ssm" {
 }
 
 module "ec2_ar_radius" {
-  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-ec2_autorecovery?ref=v0.12.7"
+  source = "git@github.com:rackspace-infrastructure-automation/aws-terraform-ec2_autorecovery?ref=v0.12.14"
 
   backup_tag_value                  = "False"
   ec2_os                            = "amazon2"
@@ -66,4 +66,14 @@ module "ec2_ar_radius" {
       timeoutSeconds = 300
     }
   ]
+}
+
+module "directory" {
+  source = "git@github.com:rackerlabs/mpcbuild-aws-workspaces-setup//modules/directory"
+
+  directory_type = "MicrosoftAD"
+  directory_name = "test.build.local"
+  directory_size = "Standard"
+  vpc_id = module.base_network.vpc_id
+  subnets_ids = module.vpc.private_subnets
 }
