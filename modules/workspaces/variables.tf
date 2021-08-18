@@ -39,9 +39,9 @@ variable "workspace_compute_type" {
 }
 
 variable "workspace_bundle" {
-  description = "Bundle (combination of OS + applications) to deploy on the workspaces. The following are the valid options: Windows 10, Windows 10 and Office 2016, Amazon Linux 2, Windows 7, Windows 7 and Office 2013, Windows 7 and Office 2010"
+  description = "Bundle (combination of OS + applications) to deploy on the workspaces. The following are the valid options: Windows 10 (Server 2019 based), Windows 10 and Office 2019 Pro Plus (Server 2019 based), Windows 10 and Office 2016 Pro Plus (Server 2016 based), Amazon Linux 2, Windows 7, Windows 7 and Office 2010"
   type        = string
-  default     = "Windows 10"
+  default     = "Windows 10 (Server 2019 based)"
 }
 
 variable "bundle_id" {
